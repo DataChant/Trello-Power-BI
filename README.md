@@ -1,4 +1,6 @@
 # Trello-Power-BI
+<img width="972" height="337" alt="image" src="https://github.com/user-attachments/assets/97c36b24-0aca-4a40-9b1f-64c432fb7907" />
+
 This is an open source repo for Microsoft Fabric, Power BI and Power Query users to connect to your Trello account and analyze your boards using Power Query / DAX
 
 
