@@ -1,0 +1,212 @@
+table Cards
+	lineageTag: c7e12756-5469-4567-86b9-7a911eace110
+
+	measure 'All Cards' = COUNTROWS ( Cards )
+		formatString: #,0
+		lineageTag: ef742c39-d797-44df-86c5-158649f36fb5
+
+	measure 'Cards Closed' = CALCULATE([All Cards], KEEPFILTERS(Cards[Closed] = TRUE()))
+		formatString: #,0
+		lineageTag: 11b9f815-ce06-40b0-8e8f-27fdb033e899
+
+	measure 'Cards Open' = CALCULATE([All Cards], KEEPFILTERS(Cards[Closed] = FALSE()))
+		formatString: #,0
+		lineageTag: 8dff2957-1bf0-4f5d-b305-6c1c4bb06dc2
+
+	column 'Card ID'
+		dataType: string
+		lineageTag: 68377f53-5b72-4ded-8289-138dacf5e02c
+		summarizeBy: none
+		sourceColumn: Card ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Closed
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: c34c836f-8832-47e8-87a4-195bde431fd0
+		summarizeBy: none
+		sourceColumn: Closed
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Due Complete'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: e6043fd5-b487-4fca-8933-9e46dad85b89
+		summarizeBy: none
+		sourceColumn: Due Complete
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Date Last Activity'
+		dataType: dateTime
+		formatString: dd-mmm-yy
+		lineageTag: 42c49b35-11ef-4525-a043-ffeefe2ac4f7
+		summarizeBy: none
+		sourceColumn: Date Last Activity
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Desc
+		dataType: string
+		lineageTag: 53b70bfa-d612-4ee1-9e0e-e55113b758d0
+		summarizeBy: none
+		sourceColumn: Desc
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Due Date'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 9888c52c-a808-499c-a528-f9a72294d4f4
+		summarizeBy: none
+		sourceColumn: Due Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Card Name'
+		dataType: string
+		lineageTag: 1842d7c5-205e-4fe2-a418-ff29871cf735
+		summarizeBy: none
+		sourceColumn: Card Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Url
+		dataType: string
+		lineageTag: 3b9ec61d-bb65-437f-9e5b-b58b75405c7a
+		dataCategory: WebUrl
+		summarizeBy: none
+		sourceColumn: Url
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Start Date'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e8633df8-d6fe-402a-bb68-7cdc914c09ee
+		summarizeBy: none
+		sourceColumn: Start Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Board ID'
+		dataType: string
+		lineageTag: ae44aab7-11ab-4920-b93f-f9c6ef915312
+		summarizeBy: none
+		sourceColumn: Board ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Check Items'
+		dataType: int64
+		formatString: 0
+		lineageTag: 978d6864-f3df-4f59-86f6-7ff7ff4b70ff
+		summarizeBy: sum
+		sourceColumn: Check Items
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Check Items Checked'
+		dataType: int64
+		formatString: 0
+		lineageTag: ce7883bd-311f-4b8d-833b-50d2f85c466d
+		summarizeBy: sum
+		sourceColumn: Check Items Checked
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Check Items Earliest Due Date'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 99ea5369-09e9-4d80-8c05-c4e5eab57c0b
+		summarizeBy: none
+		sourceColumn: Check Items Earliest Due Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Comments
+		dataType: int64
+		formatString: 0
+		lineageTag: 1f4893b1-5162-46f5-9ced-7134d92f8c44
+		summarizeBy: sum
+		sourceColumn: Comments
+
+		annotation SummarizationSetBy = Automatic
+
+	column Attachments
+		dataType: int64
+		formatString: 0
+		lineageTag: 8fe1ce66-9e2f-46f8-bb00-8029f78edc88
+		summarizeBy: sum
+		sourceColumn: Attachments
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Has Description'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 5c81b7ce-fc16-4ab7-81d8-3a09fc5d6f17
+		summarizeBy: none
+		sourceColumn: Has Description
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Current List ID'
+		dataType: string
+		lineageTag: 5cc3d422-c15b-43ae-a1d3-4f88a9facb2d
+		summarizeBy: none
+		sourceColumn: Current List ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Spark' = (LEFT(TRIM(Cards[Card Name]), 5) = "Spark")
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 90c356fb-a211-402c-8ca2-184cf927d1aa
+		summarizeBy: none
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Cards = m
+		mode: import
+		source = ```
+				let
+				
+				    Boards =
+				    #"Cards Base",
+				        
+				    #"Expanded FnGetCards" = Table.ExpandRecordColumn(Boards, "FnGetCards", {"id", "idList", "closed", "dueComplete", "dateLastActivity", "desc", "due", "name", "shortUrl", "start", "badges"}, {"id", "idList", "closed", "dueComplete", "dateLastActivity", "desc", "due", "name", "shortUrl", "start", "badges"}),
+				    
+				    #"Expanded badges" = Table.ExpandRecordColumn(#"Expanded FnGetCards", "badges", {"checkItems", "checkItemsChecked", "checkItemsEarliestDue", "comments", "attachments", "description"}, {"checkItems", "checkItemsChecked", "checkItemsEarliestDue", "comments", "attachments", "description"}),
+				    
+				    #"Renamed Columns1" = Table.RenameColumns(#"Expanded badges",{{"id", "Card ID"}, {"closed", "Closed"}, {"dueComplete", "Due Complete"}, {"dateLastActivity", "Date Last Activity"}, {"desc", "Desc"}, {"due", "Due Date"}, {"name", "Card Name"}, {"shortUrl", "Url"}, {"start", "Start Date"}, {"idList", "List ID"},  {"checkItems", "Check Items"}, {"checkItemsChecked", "Check Items Checked"}, {"checkItemsEarliestDue", "Check Items Earliest Due Date"}, {"comments", "Comments"}, {"attachments", "Attachments"}, {"description", "Has Description"}}),
+				    #"Filtered Rows" = Table.SelectRows(#"Renamed Columns1", each [Card ID] <> null and [Card ID] <> ""),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"Start Date", type datetimezone}, {"Due Date", type datetimezone}, {"Date Last Activity", type datetimezone}, {"Closed", type logical}, {"Due Complete", type logical}, {"Check Items", Int64.Type}, {"Check Items Checked", Int64.Type}, {"Check Items Earliest Due Date", type datetimezone}, {"Comments", Int64.Type}, {"Attachments", Int64.Type}, {"Has Description", type logical}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"Start Date", type datetime}, {"Due Date", type datetime}, {"Date Last Activity", type datetime}, {"Check Items Earliest Due Date", type datetime}}),
+				    #"Changed Type2" = Table.TransformColumnTypes(#"Changed Type1",{{"Due Date", type date}, {"Start Date", type date}, {"Date Last Activity", type date}, {"Check Items Earliest Due Date", type date}}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Changed Type2",{{"List ID", "Current List ID"}}),
+				    #"Trimmed Text" = Table.TransformColumns(#"Renamed Columns",{{"Card Name", Text.Trim, type text}})
+				in
+				    #"Trimmed Text"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

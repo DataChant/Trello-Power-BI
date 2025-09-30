@@ -1,0 +1,62 @@
+table 'Board Labels'
+	lineageTag: ed4bd317-43cf-4c1d-ae0b-1de337261f0c
+
+	column 'Board ID'
+		dataType: string
+		isHidden
+		lineageTag: 7e1de78e-94a0-4665-b26e-2aa2cafa5616
+		summarizeBy: none
+		sourceColumn: Board ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Attribute
+		dataType: string
+		lineageTag: 0b812578-afb3-4dc6-9e72-88c102bb6573
+		summarizeBy: none
+		sourceColumn: Attribute
+
+		annotation SummarizationSetBy = Automatic
+
+	column Value
+		dataType: string
+		lineageTag: 02e6de8f-fd60-4741-93c6-2f20a4f19308
+		summarizeBy: none
+		sourceColumn: Value
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Board Labels' = m
+		mode: import
+		source =
+				let
+				    boardsUrl = "https://api.trello.com",
+				    boardsRaw = Json.Document(
+				        Web.Contents(
+				            boardsUrl,
+				            [
+				                RelativePath = "1/members/me/boards",
+				                Query =
+				                [
+				                    key = #"API Key",
+				                    token = #"API Token"
+				                ]
+				            ]
+				        )
+				    ),
+				    #"Converted to Table" = Table.FromList(boardsRaw, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				    #"Expanded Column1" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"id", "labelNames", "name"}, {"id", "labelNames", "name"}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Expanded Column1",{"name"}),
+				    #"Expanded labelNames" = Table.ExpandRecordColumn(#"Removed Columns", "labelNames", {"green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black", "green_dark", "yellow_dark", "orange_dark", "red_dark", "purple_dark", "blue_dark", "sky_dark", "lime_dark", "pink_dark", "black_dark", "green_light", "yellow_light", "orange_light", "red_light", "purple_light", "blue_light", "sky_light", "lime_light", "pink_light", "black_light"}, {"green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black", "green_dark", "yellow_dark", "orange_dark", "red_dark", "purple_dark", "blue_dark", "sky_dark", "lime_dark", "pink_dark", "black_dark", "green_light", "yellow_light", "orange_light", "red_light", "purple_light", "blue_light", "sky_light", "lime_light", "pink_light", "black_light"}),
+				    #"Unpivoted Other Columns" = Table.UnpivotOtherColumns(#"Expanded labelNames", {"id"}, "Attribute", "Value"),
+				    #"Filtered Rows1" = Table.SelectRows(#"Unpivoted Other Columns", each [Value] <> null and [Value] <> ""),
+				    #"Renamed Columns" = Table.RenameColumns(#"Filtered Rows1",{{"id", "Board ID"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

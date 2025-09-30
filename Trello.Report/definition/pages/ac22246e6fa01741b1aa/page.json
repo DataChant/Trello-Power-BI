@@ -1,0 +1,81 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+  "name": "ac22246e6fa01741b1aa",
+  "displayName": "Card Returns",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "92a490bd5f90fe7b82ab",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Boards"
+              }
+            },
+            "Property": "Board Name"
+          }
+        },
+        "type": "Categorical",
+        "howCreated": "User"
+      },
+      {
+        "name": "645e58167d3ddc27616a",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Lists"
+              }
+            },
+            "Property": "List Name"
+          }
+        },
+        "type": "Categorical",
+        "howCreated": "User",
+        "objects": {
+          "general": [
+            {
+              "properties": {}
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "2204053186189bcb9803",
+      "target": "5638caea8769af48e504",
+      "type": "NoFilter"
+    },
+    {
+      "source": "2204053186189bcb9803",
+      "target": "2bbedde97e170be0c113",
+      "type": "NoFilter"
+    },
+    {
+      "source": "2204053186189bcb9803",
+      "target": "93a75c8b8f390498b3fa",
+      "type": "DataFilter"
+    },
+    {
+      "source": "93a75c8b8f390498b3fa",
+      "target": "2bbedde97e170be0c113",
+      "type": "NoFilter"
+    },
+    {
+      "source": "2bbedde97e170be0c113",
+      "target": "93a75c8b8f390498b3fa",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "af405a61131bc618307f",
+      "target": "d49b224d4892923e6cee",
+      "type": "DataFilter"
+    }
+  ]
+}

@@ -1,0 +1,185 @@
+table 'Checklist Updates'
+	lineageTag: 8a0dc813-f9b6-44ff-9f5f-e9a1db6523f1
+
+	measure 'Item Completions' =
+			CALCULATE (
+			    COUNTROWS ( 'Checklist Updates' ),
+			    KEEPFILTERS('Checklist Updates'[Item State] = "complete"),
+			    TREATAS (
+			        VALUES ( 'Card Moves'[Card ID] ),
+			        'Cards'[Card ID]
+			    )
+			)
+		formatString: 0
+		lineageTag: 4f056ea8-f0f6-4ebc-94b6-9d64359113f1
+
+	measure 'Avg Weekly Items Compeleted' =
+			
+			AVERAGEX (
+			    VALUES ( 'Calendar'[Week of] ),
+			    [Item Completions]
+			)
+		formatString: #,0.0
+		lineageTag: 58128a28-3124-435b-b329-fc3a3e213a31
+
+	measure 'Avg Weekly Items Completed (All Time)' =
+			
+			CALCULATE (
+			    [Avg Weekly Items Compeleted],
+			    ALL ( 'Calendar' )
+			)
+		formatString: #,0.0
+		lineageTag: 2711b849-6571-44a9-a9a4-4194ba959fbc
+
+	column 'Member ID'
+		dataType: string
+		lineageTag: 97e29ee6-7302-4c1a-bec8-eadc622472e2
+		summarizeBy: none
+		sourceColumn: Member ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Checklist ID'
+		dataType: string
+		isHidden
+		lineageTag: d386cdf7-8c9e-4550-a0fe-e7c4b22ff62b
+		summarizeBy: none
+		sourceColumn: Checklist ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Item ID'
+		dataType: string
+		lineageTag: fe09f3ea-ecca-487d-899a-87be57c8205d
+		summarizeBy: none
+		sourceColumn: Item ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Item State'
+		dataType: string
+		lineageTag: a17debd7-b556-4659-8618-94538c8c6208
+		summarizeBy: none
+		sourceColumn: Item State
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: cb5bfaa9-b9c7-435e-9f03-7e8cabf473b8
+		summarizeBy: none
+		sourceColumn: Date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Datetime
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: fa466b9e-6540-4b68-8688-564165861a1f
+		summarizeBy: none
+		sourceColumn: Datetime
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Card ID'
+		dataType: string
+		isHidden
+		lineageTag: 3affc381-7217-4573-9661-9b27a6c24245
+		summarizeBy: none
+		sourceColumn: Card ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Checklist Name'
+		dataType: string
+		isHidden
+		lineageTag: 56f64e24-7945-4b76-8c0e-6465d6067743
+		summarizeBy: none
+		sourceColumn: Checklist Name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Item Name'
+		dataType: string
+		isHidden
+		lineageTag: 1a9f8f2f-3119-40c5-9f6a-c7ac49c20a58
+		summarizeBy: none
+		sourceColumn: Item Name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Checklist Updates' = m
+		mode: import
+		source = ```
+				let
+				    Boards =
+				    let
+				        boardsUrl = "https://api.trello.com",
+				        boardsRaw = Json.Document(
+				            Web.Contents(
+				                boardsUrl,
+				                [
+				                    RelativePath = "1/members/me/boards",
+				                    Query =
+				                    [
+				                        key = #"API Key",
+				                        token = #"API Token"
+				                    ]
+				                ]
+				            )
+				        ),
+				        #"Converted to Table" = Table.FromList(boardsRaw, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				        #"Expanded Column1" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"}, {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"})
+				    in
+				        #"Expanded Column1",
+				    
+				
+				    FnGetAllActions = (BoardID, actionStr) =>
+				        List.Generate(
+				            ()=> FnGetBoardActions(BoardID, null, 1000, actionStr, -1),
+				            each [last] <> "",
+				            each FnGetBoardActions(BoardID, [last], [count], actionStr, -1)
+				        ),
+				        
+				    Source = Boards,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"id"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"id", "Board ID"}}),
+				    GenerateActions = Table.AddColumn(#"Renamed Columns", "FnGetBoardActions", each FnGetAllActions([Board ID], "updateCheckItemStateOnCard")),
+				    #"Expanded FnGetBoardActions" = Table.ExpandListColumn(GenerateActions, "FnGetBoardActions"),
+				    #"Remove Nulls in Actions" = Table.SelectRows(#"Expanded FnGetBoardActions", each [FnGetBoardActions] <> null),
+				    #"Expanded FnGetBoardActions1" = Table.ExpandRecordColumn(#"Remove Nulls in Actions", "FnGetBoardActions", {"actions"}, {"actions"}),
+				    #"Expanded actions" = Table.ExpandListColumn(#"Expanded FnGetBoardActions1", "actions"),
+				    #"Expanded actions1" = Table.ExpandRecordColumn(#"Expanded actions", "actions", {"id", "idMemberCreator", "data", "date"}, {"id", "idMemberCreator", "data", "date"}),
+				    #"Expanded data" = Table.ExpandRecordColumn(#"Expanded actions1", "data", {"card", "checklist", "checkItem"}, {"card", "checklist", "checkItem"}),
+				    #"Expanded card" = Table.ExpandRecordColumn(#"Expanded data", "card", {"id"}, {"Card ID"}),
+				    #"Expanded checkItem" = Table.ExpandRecordColumn(#"Expanded card", "checkItem", {"id", "state", "name"}, {"checkItem.id", "checkItem.state", "checkItem.name"}),
+				    #"Expanded checklist" = Table.ExpandRecordColumn(#"Expanded checkItem", "checklist", {"id", "name"}, {"checklist.id", "checklist.name"}),
+				    #"Duplicated Column" = Table.DuplicateColumn(#"Expanded checklist", "date", "Datetime"),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Duplicated Column",{{"id", "Action ID"}, {"idMemberCreator", "Member ID"}, {"checklist.id", "Checklist ID"}, {"checkItem.id", "Item ID"}, {"checkItem.state", "Item State"}, {"date", "Date"}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns1",{{"Date", type datetimezone}, {"Datetime", type datetimezone}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"Date", type datetime}, {"Datetime", type datetime}}),
+				    #"Changed Type2" = Table.TransformColumnTypes(#"Changed Type1",{{"Date", type date}}),
+				    #"Renamed Columns2" = Table.RenameColumns(#"Changed Type2",{{"checklist.name", "Checklist Name"}, {"checkItem.name", "Item Name"}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns2",{"Board ID", "Action ID"})
+				in
+				    #"Removed Columns"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

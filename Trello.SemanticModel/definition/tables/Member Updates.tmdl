@@ -1,0 +1,107 @@
+table 'Member Updates'
+	lineageTag: 4d0dfe0d-7560-4a36-a85b-aeff3a0dc49a
+
+	column 'Member ID'
+		dataType: string
+		lineageTag: 126d6318-aa86-4507-bef5-8c66801b054b
+		summarizeBy: none
+		sourceColumn: Member ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Card ID'
+		dataType: string
+		isHidden
+		lineageTag: f5f1baf2-c816-42f6-a017-5aef0967734a
+		summarizeBy: none
+		sourceColumn: Card ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Action Type'
+		dataType: string
+		lineageTag: b8504396-d7c1-4d6b-9ef8-3c57567535f2
+		summarizeBy: none
+		sourceColumn: Action Type
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 1f4eaea9-12a4-4d06-b186-b831fe592a20
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Datetime
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 26af58f9-9394-4888-a824-95f390ff0a7b
+		summarizeBy: none
+		sourceColumn: Datetime
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Member Updates' = m
+		mode: import
+		source = ```
+				let
+				    Boards =
+				    let
+				        boardsUrl = "https://api.trello.com",
+				        boardsRaw = Json.Document(
+				            Web.Contents(
+				                boardsUrl,
+				                [
+				                    RelativePath = "1/members/me/boards",
+				                    Query =
+				                    [
+				                        key = #"API Key",
+				                        token = #"API Token"
+				                    ]
+				                ]
+				            )
+				        ),
+				        #"Converted to Table" = Table.FromList(boardsRaw, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				        #"Expanded Column1" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"}, {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"})
+				    in
+				        #"Expanded Column1",
+				    
+				
+				    FnGetAllActions = (BoardID, actionStr) =>
+				        List.Generate(
+				            ()=> FnGetBoardActions(BoardID, null, 1000, actionStr),
+				            each [last] <> "",
+				            each FnGetBoardActions(BoardID, [last], [count], actionStr)
+				        ),
+				        
+				    Source = Boards,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"id"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"id", "Board ID"}}),
+				    GenerateActions = Table.AddColumn(#"Renamed Columns", "FnGetBoardActions", each FnGetAllActions([Board ID], "addMemberToCard,removeMemberFromCard")),
+				    #"Expanded FnGetBoardActions" = Table.ExpandListColumn(GenerateActions, "FnGetBoardActions"),
+				    #"Remove Nulls in Actions" = Table.SelectRows(#"Expanded FnGetBoardActions", each [FnGetBoardActions] <> null),
+				    #"Expanded FnGetBoardActions1" = Table.ExpandRecordColumn(#"Remove Nulls in Actions", "FnGetBoardActions", {"actions"}, {"actions"}),
+				    #"Expanded actions" = Table.ExpandListColumn(#"Expanded FnGetBoardActions1", "actions"),
+				    #"Expanded actions1" = Table.ExpandRecordColumn(#"Expanded actions", "actions", {"id", "data", "type", "date"}, {"Action ID", "data", "Action Type", "Date"}),
+				    #"Expanded data" = Table.ExpandRecordColumn(#"Expanded actions1", "data", {"idMember", "card"}, {"Member ID", "card"}),
+				    #"Expanded card" = Table.ExpandRecordColumn(#"Expanded data", "card", {"id"}, {"Card ID"}),
+				    #"Duplicated Column" = Table.DuplicateColumn( #"Expanded card", "Date", "Datetime"),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Duplicated Column",{{"Date", type datetimezone}, {"Datetime", type datetimezone}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"Date", type datetime}, {"Datetime", type datetime}}),
+				    #"Changed Type2" = Table.TransformColumnTypes(#"Changed Type1",{{"Date", type date}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type2",{"Board ID", "Action ID"})
+				in
+				    #"Removed Columns"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

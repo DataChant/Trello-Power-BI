@@ -1,0 +1,89 @@
+relationship AutoDetected_3b2eb114-45cb-4a6b-bca7-7c6cb1390c99
+	fromColumn: 'Card Moves'.'Member ID'
+	toColumn: Members.'Member ID'
+
+relationship AutoDetected_4f3dd7ef-b5a2-45dc-9a6b-9956e4e76a68
+	fromColumn: 'Board Labels'.'Board ID'
+	toColumn: Boards.'Board ID'
+
+relationship 305fe14a-87f1-9cb2-ebe6-c68803fea8bc
+	fromColumn: 'Current Card Members'.'Member ID'
+	toColumn: Members.'Member ID'
+
+relationship AutoDetected_d8a99210-9506-460e-8283-c46e3b05951e
+	fromColumn: 'Checklist Updates'.'Member ID'
+	toColumn: Members.'Member ID'
+
+relationship AutoDetected_76f48f5a-bd0b-4d81-898f-3fc55bb5a15a
+	fromColumn: 'Card Labels'.'Card ID'
+	toColumn: Cards.'Card ID'
+
+relationship dd0446dd-f242-0a92-dd80-d2d11b9904b3
+	fromColumn: 'Card Moves'.Date
+	toColumn: Calendar.Date
+
+relationship de664a5c-617d-e9c9-a7e7-80d42a7702f1
+	fromColumn: 'Checklist Updates'.Date
+	toColumn: Calendar.Date
+
+relationship 27c2d030-ab11-7140-4206-ea2d90d4143c
+	fromColumn: 'Card Moves'.'Card ID'
+	toColumn: Cards.'Card ID'
+
+relationship AutoDetected_8454d025-a1ad-4df8-b648-8747371f7188
+	fromColumn: 'Member Updates'.'Member ID'
+	toColumn: Members.'Member ID'
+
+relationship AutoDetected_1fe93190-3605-4554-bba2-5891a27c4a30
+	fromColumn: Lists.'Board ID'
+	toColumn: Boards.'Board ID'
+
+relationship AutoDetected_f01ced0d-55a3-409e-87ac-6fe24b2af747
+	fromColumn: 'Member Updates'.'Card ID'
+	toColumn: Cards.'Card ID'
+
+relationship AutoDetected_8cb62c44-2bfb-42d7-8e07-d502a792b1a0
+	fromColumn: 'Checklist Item States'.'Member ID'
+	toColumn: Members.'Member ID'
+
+relationship 62c0ad09-831a-967e-6db0-8ef5c3b95ab4
+	fromColumn: 'Checklist Item States'.Date
+	toColumn: Calendar.Date
+
+relationship 0d06db08-bb63-60c1-5adf-cb38be709d4a
+	fromColumn: Checklists.'Card ID'
+	toColumn: Cards.'Card ID'
+
+relationship 8db4a269-a49f-b0ee-e7d0-e3f7499aed0a
+	fromColumn: 'Checklist Updates'.'Checklist ID'
+	toColumn: Checklists.'Checklist ID'
+
+relationship 98ec6d49-b791-abe8-75cd-89679b95bb1d
+	fromColumn: 'Checklist Item States'.'Checklist ID'
+	toColumn: Checklists.'Checklist ID'
+
+relationship AutoDetected_f6710aa1-fd58-4997-b6a9-4752930401f0
+	fromColumn: 'Card and Lists'.'List ID'
+	toColumn: Lists.'List ID'
+
+relationship AutoDetected_0dffbca3-ef75-465d-a43d-39cc3c618e4a
+	crossFilteringBehavior: bothDirections
+	fromColumn: 'Card and Lists'.'Card ID'
+	toColumn: Cards.'Card ID'
+
+relationship AutoDetected_362ec9bc-b5ea-4819-a192-84cf54b1f5ab
+	fromColumn: 'Card Comments'.'Member ID'
+	toColumn: Members.'Member ID'
+
+relationship AutoDetected_82400466-47ee-436d-a428-5c7b6b64ef87
+	fromColumn: 'Card Comments'.'Board ID'
+	toColumn: Boards.'Board ID'
+
+relationship AutoDetected_0cca0ae0-c62c-40fc-9725-b96364c42123
+	fromColumn: 'Card Comments'.'Card ID'
+	toColumn: Cards.'Card ID'
+
+relationship 868a946d-e1e2-5c47-4b57-e3101a330f07
+	fromColumn: 'Card Comments'.'Comment Date'
+	toColumn: Calendar.Date
+

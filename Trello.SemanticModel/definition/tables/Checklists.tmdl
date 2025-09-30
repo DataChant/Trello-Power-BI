@@ -1,0 +1,43 @@
+table Checklists
+	lineageTag: 5b6c4909-eb9e-4f23-b573-f3a8b803ea10
+
+	column 'Card ID'
+		dataType: string
+		lineageTag: d4764a3b-9e39-4bd8-84b5-6818f48a95fd
+		summarizeBy: none
+		sourceColumn: Card ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Checklist ID'
+		dataType: string
+		lineageTag: 859b8989-0c9a-4221-aefb-c46810ffc634
+		summarizeBy: none
+		sourceColumn: Checklist ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Checklist Name'
+		dataType: string
+		lineageTag: aeeeee08-ae62-4592-941a-6a26353605e0
+		summarizeBy: none
+		sourceColumn: Checklist Name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Checklists = m
+		mode: import
+		source =
+				let
+				    Source = #"Checklist Updates",
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"Card ID", "Checklist ID", "Checklist Name", "Datetime"}),
+				    #"Sorted Rows" = Table.Sort(#"Removed Other Columns",{{"Datetime", Order.Descending}}),
+				    #"Removed Duplicates1" = Table.Distinct(#"Sorted Rows", {"Checklist ID"}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Removed Duplicates1",{"Datetime"})
+				in
+				    #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

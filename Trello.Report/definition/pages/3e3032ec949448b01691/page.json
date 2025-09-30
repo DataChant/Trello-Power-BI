@@ -1,0 +1,139 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+  "name": "3e3032ec949448b01691",
+  "displayName": "Cards",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "8aa6f08c6c738e6e3c15",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Lists"
+              }
+            },
+            "Property": "List Name"
+          }
+        },
+        "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "l",
+              "Entity": "Lists",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "In": {
+                  "Expressions": [
+                    {
+                      "Column": {
+                        "Expression": {
+                          "SourceRef": {
+                            "Source": "l"
+                          }
+                        },
+                        "Property": "List Name"
+                      }
+                    }
+                  ],
+                  "Values": [
+                    [
+                      {
+                        "Literal": {
+                          "Value": "'Mark'"
+                        }
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "howCreated": "Drillthrough"
+      },
+      {
+        "name": "ffb0b57014cfb4f343d3",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Lists"
+              }
+            },
+            "Property": "Board Name"
+          }
+        },
+        "type": "Categorical",
+        "howCreated": "Drillthrough"
+      }
+    ]
+  },
+  "pageBinding": {
+    "name": "6b74f2082b0f3927f1e7",
+    "type": "Drillthrough",
+    "parameters": [
+      {
+        "name": "7322889587dfbf2ee69e",
+        "boundFilter": "8aa6f08c6c738e6e3c15",
+        "fieldExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Lists"
+              }
+            },
+            "Property": "List Name"
+          }
+        }
+      },
+      {
+        "name": "ea9329ba8600dca56ad0",
+        "boundFilter": "ffb0b57014cfb4f343d3",
+        "fieldExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Lists"
+              }
+            },
+            "Property": "Board Name"
+          }
+        }
+      }
+    ],
+    "acceptsFilterContext": "None"
+  },
+  "visibility": "HiddenInViewMode",
+  "visualInteractions": [
+    {
+      "source": "815756c51174f7c46452",
+      "target": "0fbc32dfcb43e44fe2f3",
+      "type": "DataFilter"
+    },
+    {
+      "source": "815756c51174f7c46452",
+      "target": "dd8caf17c4eaee41f5c7",
+      "type": "DataFilter"
+    },
+    {
+      "source": "c20dddb1b0ef9d5fc9b6",
+      "target": "0fbc32dfcb43e44fe2f3",
+      "type": "NoFilter"
+    },
+    {
+      "source": "c20dddb1b0ef9d5fc9b6",
+      "target": "dd8caf17c4eaee41f5c7",
+      "type": "NoFilter"
+    }
+  ]
+}

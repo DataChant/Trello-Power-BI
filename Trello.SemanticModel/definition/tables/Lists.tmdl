@@ -1,0 +1,88 @@
+table Lists
+	lineageTag: ddf22f5c-cf8f-4207-838c-95bc501b5930
+
+	measure 'Selected List' = "Selected List: " & SELECTEDVALUE(Lists[List Name])
+		lineageTag: 3066230e-a0bd-404d-a50a-f8fd9fb37a72
+
+	column Color
+		dataType: string
+		lineageTag: f4ca684d-9601-45a4-a7ed-77096a3c0386
+		summarizeBy: none
+		sourceColumn: Color
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Board ID'
+		dataType: string
+		lineageTag: 6282a996-135b-494a-9a20-138e584689db
+		summarizeBy: none
+		sourceColumn: Board ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Board Name'
+		dataType: string
+		lineageTag: b54769a2-8200-4985-b5a2-bb3ad278b59b
+		summarizeBy: none
+		sourceColumn: Board Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'List ID'
+		dataType: string
+		lineageTag: b1c6cdf7-7e7c-4d46-b777-e6868f0a2563
+		summarizeBy: none
+		sourceColumn: List ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'List Name'
+		dataType: string
+		lineageTag: 33b82304-bd09-4399-aa49-12f04c2ec813
+		summarizeBy: none
+		sourceColumn: List Name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Lists = m
+		mode: import
+		source = ```
+				let
+				    Boards =
+				    let
+				        boardsUrl = "https://api.trello.com",
+				        boardsRaw = Json.Document(
+				            Web.Contents(
+				                boardsUrl,
+				                [
+				                    RelativePath = "1/members/me/boards",
+				                    Query =
+				                    [
+				                        key = #"API Key",
+				                        token = #"API Token"
+				                    ]
+				                ]
+				            )
+				        ),
+				        #"Converted to Table" = Table.FromList(boardsRaw, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				        #"Expanded Column1" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"}, {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"})
+				    in
+				        #"Expanded Column1",
+				        
+				    Source = Boards,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"id", "name"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"id", "Board ID"}, {"name", "Board Name"}}),
+				    #"Invoked Custom Function" = Table.AddColumn(#"Renamed Columns", "FnGetLists", each FnGetLists([Board ID])),
+				    #"Expanded FnGetLists1" = Table.ExpandListColumn(#"Invoked Custom Function", "FnGetLists"),
+				    #"Filtered Rows" = Table.SelectRows(#"Expanded FnGetLists1", each [FnGetLists] <> null),
+				    #"Expanded FnGetLists2" = Table.ExpandRecordColumn(#"Filtered Rows", "FnGetLists", {"id", "name", "closed", "color", "idBoard", "pos", "subscribed", "softLimit", "type", "datasource"}, {"id", "name", "closed", "color", "idBoard", "pos", "subscribed", "softLimit", "type", "datasource"}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Expanded FnGetLists2",{"closed", "idBoard", "pos", "subscribed", "softLimit", "type", "datasource"}),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Removed Columns",{{"id", "List ID"}, {"name", "List Name"}, {"color", "Color"}})
+				in
+				    #"Renamed Columns1"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

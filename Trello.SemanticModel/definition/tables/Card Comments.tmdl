@@ -1,0 +1,298 @@
+table 'Card Comments'
+	lineageTag: e8fcaf43-7b7b-4036-8425-1b2eaa2a21e2
+
+	measure 'Avg Weekly Comments (All Time)' =
+			
+			CALCULATE(
+			    [Avg Weekly Comments],
+			    ALL('Calendar')
+			)
+		formatString: #,0.0
+		lineageTag: 44fc5d45-6d61-4e96-8e83-e31a9fd9d112
+
+	measure Comments = COUNTROWS ( 'Card Comments' )
+		formatString: #,0
+		lineageTag: d829c1cc-c1cc-4d92-ae35-89760b86a027
+
+	measure 'Avg Weekly Comments' =
+			
+			AVERAGEX(
+			    VALUES('Calendar'[Week of]),
+			    [Comments]
+			)
+		formatString: #,0.0
+		lineageTag: 3a160bfa-abbc-4e94-ac6f-d85a5aa703e0
+
+	measure 'Aggregated Day Delays' =
+			
+			CALCULATE (
+			    SUM ( 'Card Comments'[Work Days Since Previous Comment] ),
+			    TREATAS ( VALUES (Lists[List ID] ), 'Card Comments'[List ID] )
+			)
+		formatString: #,0
+		lineageTag: 6559c745-7f92-4a79-bbd9-d2d80d3d390d
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure 'Inactive Tasks (+3 work days)' =
+			
+			CALCULATE (
+			    CALCULATE(
+			        DISTINCTCOUNT('Card Comments'[Card ID]),
+			        KEEPFILTERS ('Card Comments'[Work Days Since Previous Comment] >= 3)
+			    ),
+			    TREATAS ( VALUES (Lists[List ID] ), 'Card Comments'[List ID] )
+			)
+		formatString: #,0
+		lineageTag: 5db7e4e5-4d4d-4c68-bc4c-dce059c161b5
+
+	measure 'Longest Inactivity in Work Days' =
+			
+			CALCULATE (
+			    MAX ('Card Comments'[Work Days Since Previous Comment]),
+			    TREATAS ( VALUES (Lists[List ID] ), 'Card Comments'[List ID] )
+			)
+		formatString: 0
+		lineageTag: 83416f17-2c1c-4616-8f92-8c6523f8f7da
+
+	column Datetime
+		dataType: dateTime
+		formatString: dd-mmm-yy hh:nn
+		lineageTag: a181bbea-1f46-487c-9698-bdab97d5a000
+		summarizeBy: none
+		sourceColumn: Datetime
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column 'List ID'
+		dataType: string
+		lineageTag: 777e9702-9e95-490d-bb5a-0d466008bacb
+		summarizeBy: none
+		sourceColumn: List ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Board ID'
+		dataType: string
+		lineageTag: f7fff85b-3d04-4627-9f21-19c226b0b463
+		summarizeBy: none
+		sourceColumn: Board ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Member ID'
+		dataType: string
+		lineageTag: 3c4251a3-b400-4d8a-81ad-37a09e370ce8
+		summarizeBy: none
+		sourceColumn: Member ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Card ID'
+		dataType: string
+		isHidden
+		lineageTag: bb5e9e30-8124-4292-817c-4cfa74bf85dd
+		summarizeBy: none
+		sourceColumn: Card ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Comment
+		dataType: string
+		lineageTag: a2638d6d-b427-4c5b-b7ce-8e394ede7031
+		summarizeBy: none
+		sourceColumn: Comment
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Date Last Edited'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e154e56b-74d6-462a-aa26-49977bee0c95
+		summarizeBy: none
+		sourceColumn: Date Last Edited
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Comment Date'
+		dataType: dateTime
+		formatString: dd-mmm-yy
+		lineageTag: a5dd93d2-280f-4fac-9075-04718c7653e2
+		summarizeBy: none
+		sourceColumn: Comment Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column 'Work Days Since Previous Comment'
+		dataType: int64
+		formatString: 0
+		lineageTag: c8e6e122-80ae-4cc1-806f-e05631988f99
+		summarizeBy: sum
+		sourceColumn: Work Days Since Previous Comment
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Card Name' = RELATED(Cards[Card Name])
+		lineageTag: 80eb4efe-dbf7-43b4-9f2e-605044723343
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Board Name' = RELATED(Boards[Board Name])
+		lineageTag: a102f4b5-b6a8-472a-b16b-94350bf8eb20
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Prev Comment Datetime'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: c885e963-e6b0-4e39-bdfc-6b69c891be5b
+		summarizeBy: none
+		sourceColumn: Prev Comment Datetime
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Is Last Comment'
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: b7a55023-cc49-49c7-96de-cae997a02692
+		summarizeBy: none
+		sourceColumn: Is Last Comment
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Prev Comment Date'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 32221cc9-841b-44e7-b78d-713e6047f42c
+		summarizeBy: none
+		sourceColumn: Prev Comment Date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Member = RELATED('Members'[Full Name])
+		lineageTag: 140614b5-600b-4373-8817-6b5148774bc3
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'List Name' =
+			VAR _list_id = [List ID]
+			RETURN CALCULATE(MAX(Lists[List Name]), Lists[List ID] = _list_id)
+		lineageTag: c4154c7c-0b91-4765-b684-ebaf5fc2dd58
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Card Comments' = m
+		mode: import
+		source = ```
+				let
+				    Boards =
+				    let
+				        boardsUrl = "https://api.trello.com",
+				        boardsRaw = Json.Document(
+				            Web.Contents(
+				                boardsUrl,
+				                [
+				                    RelativePath = "1/members/me/boards",
+				                    Query =
+				                    [
+				                        key = #"API Key",
+				                        token = #"API Token"
+				                    ]
+				                ]
+				            )
+				        ),
+				        #"Converted to Table" = Table.FromList(boardsRaw, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				        #"Expanded Column1" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"}, {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"})
+				    in
+				        #"Expanded Column1",
+				    
+				
+				    FnGetAllActions = (BoardID, actionStr) =>
+				        List.Generate(
+				            ()=> FnGetBoardActions(BoardID, null, 1000, actionStr),
+				            each [last] <> "",
+				            each FnGetBoardActions(BoardID, [last], [count], actionStr)
+				        ),
+				        
+				    Source = Boards,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"id"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"id", "Board ID"}}),
+				    GenerateActions = Table.AddColumn(#"Renamed Columns", "FnGetBoardActions", each FnGetAllActions([Board ID], "commentCard")),
+				    #"Filtered Rows" = Table.SelectRows(GenerateActions, each [FnGetBoardActions] <> null and not List.IsEmpty([FnGetBoardActions])),
+				
+				    FnProcessComments = (boardActions) =>
+				    let
+				        FnGetPreviousCommentTime = (subset) =>
+				        let
+				            #"Sorted Rows" = Table.Sort(subset,{{"Datetime", Order.Ascending}}),
+				            BufferTable = Table.Buffer(#"Sorted Rows"),
+				            #"Added Index" = Table.AddIndexColumn(BufferTable, "Index", 0, 1, Int64.Type),
+				            #"Added Custom" = Table.AddColumn(#"Added Index", "Prev Comment Datetime", each if [Index] = 0 then null else  #"Added Index"{[Index] - 1}[Datetime])
+				        in
+				            #"Added Custom",
+				            
+				        #"Converted to Table" = Table.FromList(boardActions, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				        
+				        #"Remove Nulls in Actions" = Table.SelectRows(#"Converted to Table", each [Column1] <> null),
+				        #"Expanded FnGetBoardActions1" = Table.ExpandRecordColumn(#"Remove Nulls in Actions", "Column1", {"actions"}, {"actions"}),
+				        #"Expanded actions" = Table.ExpandListColumn(#"Expanded FnGetBoardActions1", "actions"),
+				        #"Expanded Column1" = Table.ExpandRecordColumn(#"Expanded actions", "actions", {"id", "idMemberCreator", "data", "date"}, {"id", "idMemberCreator", "data", "date"}),
+				        #"Duplicated Column" = Table.DuplicateColumn(#"Expanded Column1", "date", "Datetime"),
+				        #"Filtered Rows" = Table.SelectRows(#"Duplicated Column", each [id] <> null and [id] <> ""),
+				        #"Expanded data" = Table.ExpandRecordColumn(#"Filtered Rows", "data", {"idCard", "list", "text", "dateLastEdited"}, {"idCard", "list", "text", "dateLastEdited"}),
+				        #"Expanded list" = Table.ExpandRecordColumn(#"Expanded data", "list", {"id"}, {"List ID"}),
+				        #"Filtered Rows1" = Table.SelectRows(#"Expanded list", each [idCard] <> null and [idCard] <> ""),
+				        #"Renamed Columns1" = Table.RenameColumns(#"Filtered Rows1",{{"id", "Action ID"}, {"idMemberCreator", "Member ID"}, {"text", "Comment"}, {"dateLastEdited", "Date Last Edited"}, {"date", "Comment Date"}, {"idCard", "Card ID"}}),
+				        #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns1",{{"Comment Date", type datetimezone}, {"Date Last Edited", type datetimezone}, {"Datetime", type datetimezone}}),
+				        #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"Date Last Edited", type datetime}, {"Comment Date", type datetime}, {"Datetime", type datetime}}),
+				        #"Changed Type2" = Table.TransformColumnTypes(#"Changed Type1",{{"Date Last Edited", type date}, {"Comment Date", type date}}),
+				        #"Removed Columns1" = Table.RemoveColumns(#"Changed Type2",{"Action ID"}),
+				        #"Grouped Rows" = Table.Group(#"Removed Columns1", {"Member ID", "Card ID", "List ID"}, {{"subset", each _, type table [Member ID=text, Card ID=text, List ID=text, Comment=text, Date Last Edited=nullable date, Comment Date=nullable date, Datetime=nullable datetime]}}),
+				        #"Added Custom" = Table.AddColumn(#"Grouped Rows", "Custom", each FnGetPreviousCommentTime([subset])),
+				        #"Removed Columns" = Table.RemoveColumns(#"Added Custom",{"subset"})
+				        //#"Expanded Custom" = Table.ExpandTableColumn(#"Removed Columns", "Custom", {"Comment", "Date Last Edited", "Comment Date", "Datetime", "Prev Comment Datetime", "Is Last Comment"}, {"Comment", "Date Last Edited", "Comment Date", "Datetime", "Prev Comment Datetime", "Is Last Comment"})
+				    in
+				        #"Removed Columns",
+				        //#"Expanded Custom",
+				    
+				    #"Added Custom" = Table.AddColumn(#"Filtered Rows", "Comments", each FnProcessComments([FnGetBoardActions])),
+				    #"Removed Columns" = Table.RemoveColumns(#"Added Custom",{"FnGetBoardActions"}),
+				    #"Added Custom3" = Table.AddColumn(#"Removed Columns", "Is Empty", each Table.IsEmpty([Comments])),
+				    #"Filtered Rows1" = Table.SelectRows(#"Added Custom3", each ([Is Empty] = false)),
+				    #"Expanded Comments1" = Table.ExpandTableColumn(#"Filtered Rows1", "Comments", {"Member ID", "Card ID", "List ID", "Custom"}, {"Member ID", "Card ID", "List ID", "Custom"}),
+				    #"Removed Columns2" = Table.RemoveColumns(#"Expanded Comments1",{"Is Empty"}),
+				    #"Expanded Custom" = Table.ExpandTableColumn(#"Removed Columns2", "Custom", {"Comment", "Date Last Edited", "Comment Date", "Datetime", "Prev Comment Datetime", "Is Last Comment"}, {"Comment", "Date Last Edited", "Comment Date", "Datetime", "Prev Comment Datetime", "Is Last Comment"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Expanded Custom",{{"Board ID", type text}, {"Member ID", type text}, {"Card ID", type text}, {"List ID", type text}, {"Comment", type text}, {"Date Last Edited", type date}, {"Comment Date", type date}, {"Datetime", type datetime}, {"Prev Comment Datetime", type datetime}, {"Is Last Comment", type logical}}),
+				    #"Inserted Date" = Table.AddColumn(#"Changed Type", "Prev Comment Date", each DateTime.Date([Prev Comment Datetime]), type date),
+				    #"Network days" = Table.AddColumn(#"Inserted Date", "Work Days Since Previous Comment",
+				        each
+				            if [Prev Comment Datetime] = null then null
+				            else
+				                FnNetWorkDays([Prev Comment Date], [Comment Date]
+				            )
+				        ),
+				    #"Changed Type2" = Table.TransformColumnTypes(#"Network days",{{"Work Days Since Previous Comment", Int64.Type}})
+				in
+				    #"Changed Type2"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Exception
+

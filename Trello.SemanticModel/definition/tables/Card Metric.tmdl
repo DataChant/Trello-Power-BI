@@ -1,0 +1,51 @@
+table 'Card Metric'
+	lineageTag: 0838f6ef-1228-4659-9b71-27616dab6004
+
+	column 'Card Metric'
+		lineageTag: 4f0a7b4b-6c65-49f0-bf76-51cfa5fda988
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Card Metrics Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Card Metrics Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Card Metrics Fields'
+		isHidden
+		lineageTag: 8a807296-e38a-4766-ae47-bd13b7a7b7ce
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Card Metrics Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Card Metrics Order'
+		isHidden
+		formatString: 0
+		lineageTag: 1c9f627c-7d78-4b04-a8b0-c311a1179e10
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Card Metric' = calculated
+		mode: import
+		source =
+				{
+				    ("Card Returns", NAMEOF('Card Moves'[Card Returns]), 0),
+				    ("Card Deliveries", NAMEOF('Card Moves'[Card Deliveries]), 1),
+				    ("Card Moves", NAMEOF('Card Moves'[Card Moves]), 2),
+				    ("Comments", NAMEOF('Card Comments'[Comments]), 3),
+				    ("Checklist Items Completed", NAMEOF('Checklist Item States'[Checklist Items Completed]), 4)
+				}
+
+	annotation PBI_Id = 3f488fbc36b949129df3648bc16c8b8a
+

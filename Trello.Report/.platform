@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Trello"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "4514252e-429a-463e-ae7a-274488579b5f"
+  }
+}

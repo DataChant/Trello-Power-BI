@@ -1,0 +1,39 @@
+table 'Card and Lists'
+	lineageTag: f3f2d14e-c083-4fa8-ad4a-bed4f89b179e
+
+	column 'Card ID'
+		dataType: string
+		isHidden
+		lineageTag: c502517d-2eda-49d1-a5c4-19b8fb903d78
+		summarizeBy: none
+		sourceColumn: Card ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'List ID'
+		dataType: string
+		lineageTag: 8b55936b-3927-4e1a-9f40-caac6ab5de07
+		summarizeBy: none
+		sourceColumn: List ID
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Card and Lists' = m
+		mode: import
+		source =
+				let
+				    Source = #"Card Moves",
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"Card ID", "List Before", "List After"}),
+				    #"Unpivoted Other Columns" = Table.UnpivotOtherColumns(#"Removed Other Columns", {"Card ID"}, "Attribute", "Value"),
+				    #"Renamed Columns" = Table.RenameColumns(#"Unpivoted Other Columns",{{"Value", "List ID"}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns",{"Attribute"}),
+				    #"Removed Duplicates" = Table.Distinct(#"Removed Columns")
+				in
+				    #"Removed Duplicates"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Exception
+

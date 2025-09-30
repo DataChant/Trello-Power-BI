@@ -1,0 +1,241 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 51.666666666666671,
+        "y": 23.333333333333336
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 20.333333333333329,
+            "y": 0
+          },
+          "nodeIndex": "Board Labels",
+          "nodeLineageTag": "ed4bd317-43cf-4c1d-ae0b-1de337261f0c",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 103.86892177127555,
+            "y": 225
+          },
+          "nodeIndex": "Boards",
+          "nodeLineageTag": "8415a8ac-dbb3-4448-9567-7b245b416938",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 563.00521293183,
+            "y": 987.40020077702115
+          },
+          "nodeIndex": "Card Comments",
+          "nodeLineageTag": "e8fcaf43-7b7b-4036-8425-1b2eaa2a21e2",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 17
+        },
+        {
+          "location": {
+            "x": 1275.00521293183,
+            "y": 709.392756166821
+          },
+          "nodeIndex": "Card Labels",
+          "nodeLineageTag": "c4b98c7f-7217-4f58-a5ae-ff0ea04440d6",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 9
+        },
+        {
+          "location": {
+            "x": 918.95549625047,
+            "y": 604.19999694824219
+          },
+          "nodeIndex": "Cards",
+          "nodeLineageTag": "c7e12756-5469-4567-86b9-7a911eace110",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 16
+        },
+        {
+          "location": {
+            "x": 633.0770684821224,
+            "y": 151.6666666666668
+          },
+          "nodeIndex": "Lists",
+          "nodeLineageTag": "ddf22f5c-cf8f-4207-838c-95bc501b5930",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 10
+        },
+        {
+          "location": {
+            "x": 983.82372411032168,
+            "y": 0
+          },
+          "nodeIndex": "Members",
+          "nodeLineageTag": "8a7d3931-5290-48ec-9e36-95300e63db80",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 1401.0052078455669,
+            "y": 14.333343505859375
+          },
+          "nodeIndex": "Calendar",
+          "nodeLineageTag": "afd03070-5159-496b-a3f3-6575d2c4e03e",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 1583.6718795984966,
+            "y": 271.39275616682096
+          },
+          "nodeIndex": "Current Card Members",
+          "nodeLineageTag": "1f885806-6e1a-455c-81c6-1bb4c6a4c929",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 11
+        },
+        {
+          "location": {
+            "x": 1348.3385462651636,
+            "y": 1002.0334388081067
+          },
+          "nodeIndex": "Checklist Updates",
+          "nodeLineageTag": "8a0dc813-f9b6-44ff-9f5f-e9a1db6523f1",
+          "size": {
+            "height": 228,
+            "width": 234
+          },
+          "zIndex": 13
+        },
+        {
+          "location": {
+            "x": 965.33854626516336,
+            "y": 1044.6926532351793
+          },
+          "nodeIndex": "Member Updates",
+          "nodeLineageTag": "4d0dfe0d-7560-4a36-a85b-aeff3a0dc49a",
+          "size": {
+            "height": 230,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 1791.3333333333339,
+            "y": 999.99999999999989
+          },
+          "nodeIndex": "Checklist Item States",
+          "nodeLineageTag": "7b31552e-f7be-4683-bc81-57a550828cc8",
+          "size": {
+            "height": 231,
+            "width": 234
+          },
+          "zIndex": 12
+        },
+        {
+          "location": {
+            "x": 1690.6718795984973,
+            "y": 447.83333333333326
+          },
+          "nodeIndex": "Checklists",
+          "nodeLineageTag": "5b6c4909-eb9e-4f23-b573-f3a8b803ea10",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 938.3333333333336,
+            "y": 343.16666666666657
+          },
+          "nodeIndex": "Card and Lists",
+          "nodeLineageTag": "f3f2d14e-c083-4fa8-ad4a-bed4f89b179e",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 14
+        },
+        {
+          "location": {
+            "x": 256.62216291713634,
+            "y": 965.38530647035782
+          },
+          "nodeIndex": "Card Moves",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 15
+        },
+        {
+          "location": {
+            "x": 2005.0000000000009,
+            "y": 406.34632661758963
+          },
+          "nodeIndex": "Metric",
+          "nodeLineageTag": "8189f6e2-f053-4373-a05b-b22ed6e6afbd",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 2318.6666666666674,
+            "y": 561.34632661758963
+          },
+          "nodeIndex": "Card Metric",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 2
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 60,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

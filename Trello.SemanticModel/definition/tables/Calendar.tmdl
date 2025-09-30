@@ -1,0 +1,100 @@
+table Calendar
+	lineageTag: afd03070-5159-496b-a3f3-6575d2c4e03e
+	dataCategory: Time
+
+	column Date
+		isKey
+		formatString: dd-mmm-yy
+		lineageTag: de0b4484-3395-4ae9-a408-1655d72d0b72
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Year = YEAR('Calendar'[Date])
+		lineageTag: d6cb0a8b-faa6-4029-aacc-f6c3d2e7c9fb
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month = MONTH('Calendar'[Date])
+		lineageTag: 027fdc87-2e47-43e7-b533-11ac77e571e0
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column Day = DAY('Calendar'[Date])
+		lineageTag: 65f46c43-0c91-4c9e-a7be-b0724009a5d4
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column Week = WEEKNUM('Calendar'[Date])
+		lineageTag: 9379276e-7142-4a4b-bf90-4e3a14d79558
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Week' =
+			VAR _week = 'Calendar'[Week]
+			VAR _weekStr = IF (_week > 9, _week, "0" & _week )
+			RETURN
+			 'Calendar'[Year] & "-" & _weekStr
+		lineageTag: bd7182cd-4e3e-4dc4-a7a2-583e305e69ea
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Week of' = VAR _year_week = 'Calendar'[Year Week] RETURN CALCULATE(MIN('Calendar'[Date]), FILTER(ALL('Calendar'), 'Calendar'[Year Week] = _year_week))
+		lineageTag: 66edf36d-e318-47e2-b2bc-d77bea84450d
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column 'Year Month' =
+			VAR _month = 'Calendar'[Month]
+			VAR _month_str = IF (_month < 10, "0" & _month, _month)
+			RETURN
+			'Calendar'[Year] & "-" & _month_str
+		lineageTag: a706889c-2bef-4463-adb9-ac7e2901a967
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy 'Year-Week Hierarchy'
+		lineageTag: b9705469-a872-4387-a7e9-860cf819aae2
+
+		level Year
+			lineageTag: 241a0f1f-cca3-4e30-9eae-3f64b97d64be
+			column: Year
+
+		level Week
+			lineageTag: ccbd6e51-68c1-4100-ae10-29cca13e8d1a
+			column: Week
+
+	hierarchy 'Year-Month Hierarchy'
+		lineageTag: d9f3bc47-748b-4d77-8e66-05ad8ccef90d
+
+		level Year
+			lineageTag: 417d5f70-3970-4a23-8430-fb599a1c1105
+			column: Year
+
+		level Month
+			lineageTag: fd0dbd0a-d6a2-4560-86cf-a3502b877c56
+			column: Month
+
+	partition Calendar = calculated
+		mode: import
+		source = CALENDAR(MIN(MIN('Cards'[Start Date]), MIN('Card Moves'[Date])), MAX(MAX(Cards[Due Date]), MAX('Card Moves'[Date])))
+
+	annotation PBI_Id = fe6cad64451a4c70b8dd5b9fc71fa02e
+

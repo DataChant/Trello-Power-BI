@@ -1,0 +1,324 @@
+expression 'API Key' = "[Enter Key Here]" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: e6c22b54-8c68-4a0d-91bf-3fd76c33165e
+	queryGroup: Parameters
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+
+expression 'API Token' = "[Enter API Token Here]" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 68f6c469-ac4f-4404-831c-1ce4900e9c43
+	queryGroup: Parameters
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+
+expression FnGetLists = ```
+		(boardID as text) =>
+		let
+		    url_hostname = "https://api.trello.com",
+		
+		    json = Json.Document(
+		        Web.Contents(
+		            url_hostname,
+		            [
+		                RelativePath = "1/boards/" & boardID & "/lists",
+		                Query = [
+		                    key = #"API Key",
+		                    token = #"API Token"
+		                ]
+		            ]
+		        )
+		    )
+		in 
+		    json
+		```
+	lineageTag: 3cc23c85-ffa8-4817-b246-15e189ec7bc3
+	queryGroup: Functions
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Function
+
+expression FnGetCards =
+		(boardID) =>
+		let
+		    url_hostname = "https://api.trello.com",
+		
+		    json = Json.Document(
+		        Web.Contents(
+		            url_hostname,
+		            [
+		                RelativePath = "1/boards/" & boardID & "/cards",
+		                Query = [
+		                    key = #"API Key",
+		                    token = #"API Token"
+		                ]
+		            ]
+		        )
+		    ),
+		    #"Converted to Table" = Table.FromList(json, Splitter.SplitByNothing(), null, null, ExtraValues.Error)
+		in
+		    #"Converted to Table"
+	lineageTag: de555e9f-2e76-4e3c-83f1-1a29627f8880
+	queryGroup: Functions
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Function
+
+expression FnGetMembers =
+		(boardID as text) =>
+		let
+		    url_hostname = "https://api.trello.com",
+		
+		    json = Json.Document(
+		        Web.Contents(
+		            url_hostname,
+		            [
+		                RelativePath = "1/boards/" & boardID & "/members",
+		                Query = [
+		                    key = #"API Key",
+		                    token = #"API Token"
+		                ]
+		            ]
+		        )
+		    ),
+		    #"Converted to Table" = Table.FromList(json, Splitter.SplitByNothing(), null, null, ExtraValues.Error)
+		in
+		    #"Converted to Table"
+	lineageTag: d1a377ac-d1f9-4e58-97eb-852cfc64b8fc
+	queryGroup: Functions
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Function
+
+expression 'Cards Base' = ```
+		let
+		
+		    Boards =
+		    let
+		        boardsUrl = "https://api.trello.com",
+		        boardsRaw = Json.Document(
+		            Web.Contents(
+		                boardsUrl,
+		                [
+		                    RelativePath = "1/members/me/boards",
+		                    Query =
+		                    [
+		                        key = #"API Key",
+		                        token = #"API Token"
+		                    ]
+		                ]
+		            )
+		        ),
+		        #"Converted to Table" = Table.FromList(boardsRaw, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+		        #"Expanded Column1" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"}, {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"})
+		    in
+		        #"Expanded Column1",
+		        
+		    Source = Boards,
+		    #"Removed Other Columns" = Table.SelectColumns(Source,{"id"}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"id", "Board ID"}}),
+		    #"Invoked Custom Function1" = Table.AddColumn(#"Renamed Columns", "FnGetCards", each try FnGetCards([Board ID]) otherwise null),
+		    #"Expanded FnGetCards1" = Table.ExpandTableColumn(#"Invoked Custom Function1", "FnGetCards", {"Column1"}, {"FnGetCards"})
+		in
+		    #"Expanded FnGetCards1"
+		```
+	lineageTag: a33d332c-893c-4bf4-828f-e12734f5013e
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression FnGetBoardActions = ```
+		(boardID, before, previousCount, actionStr, optional lastNDays) =>
+		let
+		     
+		    currentTimeUtc = DateTimeZone.UtcNow(),
+		    sinceTime = DateTimeZone.ToText(DateTimeZone.From(currentTimeUtc) - #duration(#"Last N Days Actions", 0, 0, 0), "yyyy-MM-ddTHH:mm:ss.fffZ"),
+		    
+		    url_hostname = "https://api.trello.com",
+		
+		    BaseQuery = [
+		        limit = "1000",
+		        format = "list",
+		        filter = actionStr,
+		        key = #"API Key",
+		        token =  #"API Token"
+		    ],
+		    
+		    QueryWithPagination =
+		        if before = null then
+		            BaseQuery
+		        else 
+		            Record.AddField(BaseQuery, "before", before),
+		
+		    FinalQuery =
+		        if lastNDays = -1 or #"Last N Days Actions" <= 0 then
+		            QueryWithPagination
+		        else
+		            Record.AddField(QueryWithPagination, "since", sinceTime),
+		
+		    actions = if previousCount < 1000 then null else
+		            Json.Document(
+		                Web.Contents(
+		                    url_hostname,
+		                    [
+		                        RelativePath = "1/boards/" & boardID & "/actions",
+		                        Query = FinalQuery
+		                    ]
+		                )
+		            ),
+		    actions_count = if actions = null then 0 else try List.Count(actions) otherwise 0,
+		    last_id = if actions = null then "" else try List.Last(actions)[id] otherwise ""
+		in
+		    [actions = actions, count = actions_count, last = last_id]
+		```
+	lineageTag: 5078ad75-70b5-4891-939f-324158814d38
+	queryGroup: Functions
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Function
+
+/// To avoid long refresh, enter a positive number for the days to go back and import data from Trello. Use 0 or -1 to fetch all data.
+expression 'Last N Days Actions' = -1 meta [IsParameterQuery=true, Type="Number", IsParameterQueryRequired=true]
+	lineageTag: be9909ac-2965-456a-b0e1-c9f25b46aa54
+	queryGroup: Parameters
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Number
+
+expression 'Boards - Base' =
+		let
+		    boardsUrl = "https://api.trello.com",
+		    boardsRaw = Json.Document(
+		        Web.Contents(
+		            boardsUrl,
+		            [
+		                RelativePath = "1/members/me/boards",
+		                Query =
+		                [
+		                    key =  #"API Key",
+		                    token = #"API Token"
+		                ]
+		            ]
+		        )
+		    ),
+		    #"Converted to Table" = Table.FromList(boardsRaw, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+		    #"Expanded Column1" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"}, {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"}),
+		    #"Removed Columns" = Table.RemoveColumns(#"Expanded Column1",{"closed", "creationMethod", "dateClosed", "datePluginDisable", "descData", "enterpriseOwned", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "subscribed", "templateGallery", "type", "shortUrl"})
+		in
+		    #"Removed Columns"
+	lineageTag: d3be1a76-d3a5-40c8-987e-07054a0b4233
+	queryGroup: 'Base Queries'
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression 'Test FnGetBoardActions' = ```
+		let
+		    Boards =
+		    let
+		        boardsUrl = "https://api.trello.com",
+		        boardsRaw = Json.Document(
+		            Web.Contents(
+		                boardsUrl,
+		                [
+		                    RelativePath = "1/members/me/boards",
+		                    Query =
+		                    [
+		                        key = #"API Key",
+		                        token = #"API Token"
+		                    ]
+		                ]
+		            )
+		        ),
+		        #"Converted to Table" = Table.FromList(boardsRaw, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+		        #"Expanded Column1" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"}, {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"})
+		    in
+		        #"Expanded Column1",
+		    
+		
+		    FnGetAllActions = (BoardID, actionStr) =>
+		        List.Generate(
+		            ()=> FnGetBoardActions(BoardID, null, 1000, actionStr),
+		            each [last] <> "",
+		            each FnGetBoardActions(BoardID, [last], [count], actionStr)
+		        ),
+		        
+		    Source = Boards,
+		    #"Removed Other Columns" = Table.SelectColumns(Source,{"id"}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"id", "Board ID"}}),
+		    GenerateActions = Table.AddColumn(#"Renamed Columns", "FnGetBoardActions", each FnGetAllActions([Board ID], "commentCard")),
+		    FnGetBoardActions1 = GenerateActions{0}[FnGetBoardActions],
+		    
+		
+		    FnGetPreviousCommentTime = (subset) =>
+		    let
+		        #"Sorted Rows" = Table.Sort(subset,{{"Datetime", Order.Ascending}}),
+		        BufferTable = Table.Buffer(#"Sorted Rows"),
+		        #"Added Index" = Table.AddIndexColumn(BufferTable, "Index", 0, 1, Int64.Type),
+		        #"Added Custom" = Table.AddColumn(#"Added Index", "Last Comment Datetime", each if [Index] = 0 then null else  #"Added Index"{[Index] - 1}[Datetime])
+		    in
+		        #"Added Custom",
+		
+		    #"Converted to Table" = Table.FromList(FnGetBoardActions1, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+		    
+		    #"Remove Nulls in Actions" = Table.SelectRows(#"Converted to Table", each [Column1] <> null),
+		    #"Expanded FnGetBoardActions1" = Table.ExpandRecordColumn(#"Remove Nulls in Actions", "Column1", {"actions"}, {"actions"}),
+		    #"Expanded actions" = Table.ExpandListColumn(#"Expanded FnGetBoardActions1", "actions"),
+		    #"Expanded Column1" = Table.ExpandRecordColumn(#"Expanded actions", "actions", {"id", "idMemberCreator", "data", "date"}, {"id", "idMemberCreator", "data", "date"}),
+		    #"Duplicated Column" = Table.DuplicateColumn(#"Expanded Column1", "date", "Datetime"),
+		    #"Filtered Rows" = Table.SelectRows(#"Duplicated Column", each [id] <> null and [id] <> ""),
+		    #"Expanded data" = Table.ExpandRecordColumn(#"Filtered Rows", "data", {"idCard", "list", "text", "dateLastEdited"}, {"idCard", "list", "text", "dateLastEdited"}),
+		    #"Expanded list" = Table.ExpandRecordColumn(#"Expanded data", "list", {"id"}, {"List ID"}),
+		    #"Filtered Rows1" = Table.SelectRows(#"Expanded list", each [idCard] <> null and [idCard] <> ""),
+		    #"Renamed Columns1" = Table.RenameColumns(#"Filtered Rows1",{{"id", "Action ID"}, {"idMemberCreator", "Member ID"}, {"text", "Comment"}, {"dateLastEdited", "Date Last Edited"}, {"date", "Comment Date"}, {"idCard", "Card ID"}}),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns1",{{"Comment Date", type datetimezone}, {"Date Last Edited", type datetimezone}, {"Datetime", type datetimezone}}),
+		    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"Date Last Edited", type datetime}, {"Comment Date", type datetime}, {"Datetime", type datetime}}),
+		    #"Changed Type2" = Table.TransformColumnTypes(#"Changed Type1",{{"Date Last Edited", type date}, {"Comment Date", type date}}),
+		    #"Removed Columns1" = Table.RemoveColumns(#"Changed Type2",{"Action ID"}),
+		    #"Grouped Rows" = Table.Group(#"Removed Columns1", {"Member ID", "Card ID", "List ID"}, {{"subset", each _, type table [Member ID=text, Card ID=text, List ID=text, Comment=text, Date Last Edited=nullable date, Comment Date=nullable date, Datetime=nullable datetime]}}),
+		    #"Added Custom" = Table.AddColumn(#"Grouped Rows", "Custom", each FnGetPreviousCommentTime([subset])),
+		    #"Removed Columns" = Table.RemoveColumns(#"Added Custom",{"subset"}),
+		    #"Expanded Custom" = Table.ExpandTableColumn(#"Removed Columns", "Custom", {"Comment", "Date Last Edited", "Comment Date", "Datetime", "Last Comment Datetime"}, {"Comment", "Date Last Edited", "Comment Date", "Datetime", "Last Comment Datetime"})
+		in
+		    #"Expanded Custom"
+		```
+	lineageTag: a6011084-5d96-4ea5-bdce-91dfa31b379a
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression FnNetWorkDays = ```
+		(StartDate as date, EndDate as date, optional Holidays as list) =>
+		let
+		    // Get list of dates between Start- and EndDate
+		    ListOfDates = List.Dates(StartDate,Number.From(EndDate-StartDate),#duration(1,0,0,0)),
+		
+		    // if the optional Holidays parameter is used: Keep only those dates in the list that don't occur in the list of Holidays;
+		    // otherwise continue with previous table
+		    DeleteHolidays = if Holidays = null then ListOfDates else List.Difference(ListOfDates, Holidays),
+		
+		    // Select only the first 5 days of the week 
+		    // The 1 in the 2nd parameter of Date.DayOfWeek makes sure that Monday will be taken as first day of the week
+		    DeleteWeekends = List.Select(DeleteHolidays, each Date.DayOfWeek(_,1) < 5 ),
+		
+		    // Count the number of days (items in the list)
+		    CountDays = List.Count(DeleteWeekends)
+		in
+		    CountDays
+		```
+	lineageTag: baf5bff3-fb6f-4395-a1d7-42924dfa78c6
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Function
+

@@ -1,0 +1,329 @@
+table 'Card Moves'
+	lineageTag: 1736ad8f-02b7-413a-b457-94c19643e5bb
+
+	measure 'Card Moves' = ```
+			
+			SUMX (
+			    VALUES(Cards),
+			CALCULATE (
+			    COUNTROWS ( 'Card Moves' ),
+			    TREATAS(
+			        VALUES ( Lists[List ID] ),
+			        'Card Moves'[List After]
+			    )
+			) +
+			CALCULATE (
+			    COUNTROWS ( 'Card Moves' ),
+			    TREATAS(
+			        VALUES ( Lists[List ID] ),
+			        'Card Moves'[List Before]
+			    )
+			))
+			
+			```
+		formatString: 0
+		isHidden
+		lineageTag: e6c068ab-918d-4ae0-b3d5-ef9a5810bdf1
+
+		changedProperty = IsHidden
+
+	measure 'Card Returns' = ```
+			
+			CALCULATE (
+			    COUNTROWS ( 'Card Moves' ),
+			    TREATAS(
+			        VALUES ( Lists[List ID] ),
+			        'Card Moves'[List After]
+			    )
+			)
+			
+			```
+		formatString: #,0
+		lineageTag: 04b0caf9-5610-4ed1-92e9-4b7914604527
+
+	measure 'Moved Cards' =
+			
+			VAR _moves = [Card Moves]
+			RETURN
+			IF (ISBLANK(_moves), BLANK(),
+			DISTINCTCOUNT('Card Moves'[Card ID])
+			)
+		formatString: #,0
+		lineageTag: 4e3107f2-ae4f-4fbf-86e4-39ec0b116ee2
+
+	measure 'First Card Move' = MIN('Card Moves'[Date])
+		formatString: dd-mmm-yy
+		lineageTag: 418e9131-ee7a-408d-a5c4-be51c4e0fbbf
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	measure 'Last Card Move' = MAX('Card Moves'[Date])
+		formatString: dd-mmm-yy
+		lineageTag: 149bbd5e-df02-404f-9b4e-a6ce117a87c3
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	measure 'Cards with 3 Returns' =
+			COUNTX (
+			    VALUES ( Cards ),
+			    VAR _returns =
+			    [Card Returns]
+			    RETURN
+			    IF (_returns >= 3, 1, BLANK())
+			)
+		formatString: #,0
+		lineageTag: 9fdc938e-643f-4566-86d3-baef23e3f268
+
+	measure 'Card Deliveries' = ```
+			
+			CALCULATE (
+			    COUNTROWS ( 'Card Moves' ),
+			    TREATAS(
+			        VALUES (Lists[List ID] ),
+			        'Card Moves'[List Before]
+			    )
+			)
+			
+			```
+		formatString: 0
+		lineageTag: 3cc7848e-008c-4ac6-aa6a-e81ef4bd7003
+
+	measure 'Remaining Cards' =
+			VAR _backlog = MAX(0, [Card Returns] - [Card Deliveries])
+			RETURN
+			IF (_backlog = 0, BLANK(), _backlog)
+		formatString: 0
+		lineageTag: 64174969-41bb-43c2-b1f8-ee799ad79cb8
+
+	measure '% of Incomplete Cards' =
+			
+			VAR _returned = [Incomplete Cards]
+			VAR _moved = [Moved Cards]
+			RETURN
+			DIVIDE(_returned, _moved)
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 70b02504-e56e-46b9-bfae-28f4f269df9f
+
+	measure 'Delivered Cards' =
+			
+			COUNTX (
+			    VALUES(Cards),
+			    IF([Card Deliveries] > [Card Returns], 1, BLANK())
+			)
+		formatString: #,0
+		lineageTag: 6bd38d47-a1a4-4474-96e7-576340e68eda
+
+	measure 'Incomplete Cards' =
+			
+			[Moved Cards] - [Delivered Cards]
+		formatString: #,0
+		lineageTag: 980fab70-87ed-4b77-9ed3-158281a3c773
+
+	measure 'Card Status' =
+			
+			VAR _deliveries = [Card Deliveries]
+			VAR _returnes = [Card Returns]
+			RETURN
+			
+			IF (
+			    ISBLANK( _deliveries ),
+			    IF (
+			        ISBLANK ( _returnes ),
+			        BLANK(),
+			        "Returned"
+			    ),
+			    IF (
+			        ISBLANK ( _returnes ),
+			        "Delivered",
+			        IF (
+			            _deliveries > _returnes, "Delivered", "Returned"
+			        )
+			    )
+			)
+		lineageTag: e61c51ae-597c-48e5-b957-031102a699d9
+
+	measure 'Avg Weekly Cards Delivered' =
+			
+			AVERAGEX (
+			    VALUES ( 'Calendar'[Week of] ),
+			    [Delivered Cards]
+			)
+		formatString: #,0.0
+		lineageTag: 38a90d7f-7c10-4c71-a264-85c19b7e50cb
+
+	measure 'Avg Weekly Cards Delivered (All Time)' =
+			
+			CALCULATE (
+			    [Avg Weekly Cards Delivered],
+			    ALL ( 'Calendar' )
+			)
+		formatString: #,0.0
+		lineageTag: 320ac559-e826-44f3-a9bd-4e5ecabb97be
+
+	measure 'Card Status Arrow' =
+			
+			SWITCH(
+			    [Card Status],
+			    "Returned", "🠈 Returned",
+			    "Delivered", "🠊 Delivered",
+			    BLANK()
+			)
+		lineageTag: a1ae94f3-688e-4fdf-8856-6a7522c9f5d5
+
+	measure 'Status Arrow Color' = ```
+			
+			SWITCH(
+			    [Card Status],
+			    "Returned", "#C62828",   -- red
+			    "Delivered", "#2E7D32",  -- green
+			    "#808080"
+			)
+			
+			```
+		lineageTag: dce3f618-68b1-4813-bec9-70c8ffdd3e84
+
+	measure 'Cards with Returns' =
+			COUNTX (
+			    VALUES ( Cards ),
+			    VAR _returns =
+			    [Card Returns]
+			    RETURN
+			    IF (_returns >= 1, 1, BLANK())
+			)
+		formatString: 0
+		lineageTag: b80304cf-86b9-43bc-8eb4-914aa840a0b1
+
+	measure '% of Returned Cards' = DIVIDE([Cards with Returns], [Moved Cards])
+		formatString: #,0.0%;-#,0.0%;#,0.0%
+		lineageTag: 4f1553af-c8ba-4bb7-ab57-331a6cd4d9a9
+
+	measure 'Cards without Returns' = [Moved Cards] - [Cards with Returns]
+		formatString: #,0
+		lineageTag: 9367d80a-1394-4720-b909-60df10325f04
+
+	column 'Member ID'
+		dataType: string
+		isHidden
+		lineageTag: 21918d9d-1bd4-4ded-92b2-d4248017f309
+		summarizeBy: none
+		sourceColumn: Member ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Card ID'
+		dataType: string
+		isHidden
+		lineageTag: 44b93ca1-a7a5-43ad-933a-87b1c24a5f79
+		summarizeBy: none
+		sourceColumn: Card ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'List Before'
+		dataType: string
+		lineageTag: a4fa9d8e-2134-4141-9b43-4a26b6c8a2b8
+		summarizeBy: none
+		sourceColumn: List Before
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'List After'
+		dataType: string
+		lineageTag: 5316e9f1-6e7d-4b56-b8dd-d2eedb4514ad
+		summarizeBy: none
+		sourceColumn: List After
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		dataType: dateTime
+		formatString: dd-mmm-yy
+		lineageTag: 491b2b26-fe3e-463b-983e-a00c15a9cc9b
+		summarizeBy: none
+		sourceColumn: Date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Datetime
+		dataType: dateTime
+		formatString: dd-mmm-yy hh:nn
+		lineageTag: c012cb62-91ed-4c8f-8eb1-9e096aa2fc6e
+		summarizeBy: none
+		sourceColumn: Datetime
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	partition 'Card Moves' = m
+		mode: import
+		source = ```
+				let
+				    Boards =
+				    let
+				        boardsUrl = "https://api.trello.com",
+				        boardsRaw = Json.Document(
+				            Web.Contents(
+				                boardsUrl,
+				                [
+				                    RelativePath = "1/members/me/boards",
+				                    Query =
+				                    [
+				                        key = #"API Key",
+				                        token = #"API Token"
+				                    ]
+				                ]
+				            )
+				        ),
+				        #"Converted to Table" = Table.FromList(boardsRaw, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				        #"Expanded Column1" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"}, {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"})
+				    in
+				        #"Expanded Column1",
+				    
+				
+				    FnGetAllActions = (BoardID, actionStr) =>
+				        List.Generate(
+				            ()=> FnGetBoardActions(BoardID, null, 1000, actionStr),
+				            each [last] <> "",
+				            each FnGetBoardActions(BoardID, [last], [count], actionStr)
+				        ),
+				        
+				    Source = Boards,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"id"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"id", "Board ID"}}),
+				    GenerateActions = Table.AddColumn(#"Renamed Columns", "FnGetBoardActions", each FnGetAllActions([Board ID], "updateCard")),
+				    #"Expanded FnGetBoardActions" = Table.ExpandListColumn(GenerateActions, "FnGetBoardActions"),
+				    #"Remove Nulls in Actions" = Table.SelectRows(#"Expanded FnGetBoardActions", each [FnGetBoardActions] <> null),
+				    #"Expanded FnGetBoardActions1" = Table.ExpandRecordColumn(#"Remove Nulls in Actions", "FnGetBoardActions", {"actions"}, {"actions"}),
+				    #"Expanded actions" = Table.ExpandListColumn(#"Expanded FnGetBoardActions1", "actions"),
+				    #"Expanded Column1" = Table.ExpandRecordColumn(#"Expanded actions", "actions", {"id", "idMemberCreator", "data", "date"}, {"id", "idMemberCreator", "data", "date"}),
+				    #"Filtered Rows" = Table.SelectRows(#"Expanded Column1", each [id] <> null and [id] <> ""),
+				    #"Expanded data" = Table.ExpandRecordColumn(#"Filtered Rows", "data", {"card", "listBefore", "listAfter"}, {"card", "listBefore", "listAfter"}),
+				    #"Filtered Rows1" = Table.SelectRows(#"Expanded data", each [listBefore] <> null),
+				    #"Expanded listBefore" = Table.ExpandRecordColumn(#"Filtered Rows1", "listBefore", {"id"}, {"listBefore.id"}),
+				    #"Expanded listAfter" = Table.ExpandRecordColumn(#"Expanded listBefore", "listAfter", {"id"}, {"listAfter.id"}),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Expanded listAfter",{{"id", "Action ID"}, {"idMemberCreator", "Member ID"}, {"listBefore.id", "List Before"}, {"listAfter.id", "List After"}, {"date", "Date"}}),
+				    #"Duplicated Column" = Table.DuplicateColumn(#"Renamed Columns1", "Date", "Datetime"),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Duplicated Column",{{"Date", type datetimezone}, {"Datetime", type datetimezone}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"Date", type datetime}, {"Datetime", type datetime}}),
+				    #"Changed Type2" = Table.TransformColumnTypes(#"Changed Type1",{{"Date", type date}}),
+				    #"Expanded card" = Table.ExpandRecordColumn(#"Changed Type2", "card", {"id"}, {"Card ID"}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Expanded card",{"Board ID", "Action ID"})
+				in
+				    #"Removed Columns"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Exception
+

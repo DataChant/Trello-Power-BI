@@ -1,0 +1,53 @@
+table Metric
+	lineageTag: 8189f6e2-f053-4373-a05b-b22ed6e6afbd
+
+	column Metric
+		lineageTag: a6b394ce-73b1-4dd5-a17d-d472b9bc0fdc
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Metric Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Metric Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Metric Fields'
+		isHidden
+		lineageTag: 7664b36f-0791-4262-9a09-45186a4ba65f
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Metric Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Metric Order'
+		isHidden
+		formatString: 0
+		lineageTag: d3b97fe9-03cb-4ad7-b424-e02fd1ed2cdd
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Metric = calculated
+		mode: import
+		source =
+				{
+				    ("Cards with 3 Returns", NAMEOF('Card Moves'[Cards with 3 Returns]), 0),
+				    ("% of Returned Cards", NAMEOF('Card Moves'[% of Returned Cards]), 1),
+				    ("Card Returns", NAMEOF('Card Moves'[Card Returns]), 2),
+				    ("% of Incomplete Cards", NAMEOF('Card Moves'[% of Incomplete Cards]), 3),
+				    ("Delivered Cards", NAMEOF('Card Moves'[Delivered Cards]), 4),
+				    ("Comments", NAMEOF('Card Comments'[Comments]), 5),
+				    ("Item Completions", NAMEOF('Checklist Item States'[Checklist Items Completed]), 6)
+				}
+
+	annotation PBI_Id = 463aa659135b4dd1bda53f7e40e2f544
+

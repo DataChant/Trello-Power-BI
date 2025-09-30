@@ -1,0 +1,69 @@
+table 'Card Labels'
+	lineageTag: c4b98c7f-7217-4f58-a5ae-ff0ea04440d6
+
+	column 'Label ID'
+		dataType: string
+		isHidden
+		lineageTag: b31e70c9-fcb2-41b9-afac-59ba350cb06f
+		summarizeBy: none
+		sourceColumn: Label ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Label Name'
+		dataType: string
+		lineageTag: 0a034b53-fe16-4c96-80f2-1b23304d6ee9
+		summarizeBy: none
+		sourceColumn: Label Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Color
+		dataType: string
+		lineageTag: 88402b3a-fa00-4d0c-a43d-42542d0e2bc3
+		summarizeBy: none
+		sourceColumn: Color
+
+		annotation SummarizationSetBy = Automatic
+
+	column Uses
+		dataType: int64
+		formatString: 0
+		lineageTag: b5e2c554-35a1-49f2-a72d-db322b33a4ec
+		summarizeBy: sum
+		sourceColumn: Uses
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Card ID'
+		dataType: string
+		isHidden
+		lineageTag: fdb486ef-dea3-4c88-adc4-24c916967bc0
+		summarizeBy: none
+		sourceColumn: Card ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Card Labels' = m
+		mode: import
+		source =
+				let
+				    Source = #"Cards Base",
+				    #"Expanded FnGetCards" = Table.ExpandRecordColumn(Source, "FnGetCards", {"id", "labels"}, {"Card ID", "labels"}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Expanded FnGetCards",{"Board ID"}),
+				    #"Expanded labels" = Table.ExpandListColumn(#"Removed Columns", "labels"),
+				    #"Filtered Rows" = Table.SelectRows(#"Expanded labels", each [labels] <> null),
+				    #"Expanded labels1" = Table.ExpandRecordColumn(#"Filtered Rows", "labels", {"id", "name", "color", "uses"}, {"id", "name", "color", "uses"}),
+				    #"Renamed Columns2" = Table.RenameColumns(#"Expanded labels1",{{"id", "Label ID"}, {"name", "Label Name"}, {"color", "Color"}, {"uses", "Uses"}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns2",{{"Uses", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

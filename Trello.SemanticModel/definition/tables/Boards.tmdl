@@ -1,0 +1,85 @@
+table Boards
+	lineageTag: 8415a8ac-dbb3-4448-9567-7b245b416938
+
+	column 'Date Last Activity'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 39081122-776a-4857-b76d-9f26aa70d605
+		summarizeBy: none
+		sourceColumn: Date Last Activity
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Date Last View'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e321e41a-056b-4368-bd5a-f9c9a3f024ca
+		summarizeBy: none
+		sourceColumn: Date Last View
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Desc
+		dataType: string
+		lineageTag: cc66bcf0-cdd0-44ac-a898-df23f39d5a63
+		summarizeBy: none
+		sourceColumn: Desc
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Board ID'
+		dataType: string
+		isHidden
+		lineageTag: 952b3a4c-3f15-48c0-9b1e-afbb692d06eb
+		summarizeBy: none
+		sourceColumn: Board ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Board Name'
+		dataType: string
+		lineageTag: 4520ee68-3fb6-4775-9753-55d35a602c65
+		summarizeBy: none
+		sourceColumn: Board Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Starred
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 0483a1b2-9313-4393-8fde-223c9bc76dd7
+		summarizeBy: none
+		sourceColumn: Starred
+
+		annotation SummarizationSetBy = Automatic
+
+	column Url
+		dataType: string
+		lineageTag: 25aaa958-b638-4f39-8a79-bfed91330170
+		summarizeBy: none
+		sourceColumn: Url
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Boards = m
+		mode: import
+		source =
+				let
+				    boardsUrl = #"Boards - Base",
+				    #"Renamed Columns" = Table.RenameColumns(boardsUrl,{{"dateLastActivity", "Date Last Activity"}, {"dateLastView", "Date Last View"}, {"desc", "Desc"}, {"id", "Board ID"}, {"name", "Board Name"}, {"starred", "Starred"}, {"url", "Url"}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns",{{"Date Last Activity", type datetimezone}, {"Date Last View", type datetimezone}, {"Starred", type logical}}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type",{{"Date Last Activity", type datetime}, {"Date Last View", type datetime}}),
+				    #"Changed Type2" = Table.TransformColumnTypes(#"Changed Type1",{{"Date Last Activity", type date}, {"Date Last View", type date}})
+				in
+				    #"Changed Type2"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

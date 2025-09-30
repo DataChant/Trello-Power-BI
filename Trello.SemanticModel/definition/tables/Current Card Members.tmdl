@@ -1,0 +1,69 @@
+table 'Current Card Members'
+	lineageTag: 1f885806-6e1a-455c-81c6-1bb4c6a4c929
+
+	column 'Card ID'
+		dataType: string
+		isHidden
+		lineageTag: 52fc4b5c-9968-408b-bdad-fa02d3551f97
+		summarizeBy: none
+		sourceColumn: Card ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Member ID'
+		dataType: string
+		isHidden
+		lineageTag: 136d0716-2fd1-4476-9900-d66930e13de4
+		summarizeBy: none
+		sourceColumn: Member ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Current Card Members' = m
+		mode: import
+		source = ```
+				let
+				
+				    Boards =
+				    let
+				        boardsUrl = "https://api.trello.com",
+				        boardsRaw = Json.Document(
+				            Web.Contents(
+				                boardsUrl,
+				                [
+				                    RelativePath = "1/members/me/boards",
+				                    Query =
+				                    [
+				                        key = #"API Key",
+				                        token = #"API Token"
+				                    ]
+				                ]
+				            )
+				        ),
+				        #"Converted to Table" = Table.FromList(boardsRaw, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				        #"Expanded Column1" = Table.ExpandRecordColumn(#"Converted to Table", "Column1", {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"}, {"closed", "creationMethod", "dateClosed", "dateLastActivity", "dateLastView", "datePluginDisable", "desc", "descData", "enterpriseOwned", "id", "idBoardSource", "idEnterprise", "idMemberCreator", "idOrganization", "idTags", "ixUpdate", "labelNames", "limits", "memberships", "name", "nodeId", "pinned", "powerUps", "prefs", "premiumFeatures", "shortLink", "shortUrl", "starred", "subscribed", "templateGallery", "type", "url"})
+				    in
+				        #"Expanded Column1",
+				        
+				    Source = Boards,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"id"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Removed Other Columns",{{"id", "Board ID"}}),
+				    #"Invoked Custom Function1" = Table.AddColumn(#"Renamed Columns", "FnGetCards", each try FnGetCards([Board ID]) otherwise null),
+				    #"Expanded FnGetCards1" = Table.ExpandTableColumn(#"Invoked Custom Function1", "FnGetCards", {"Column1"}, {"Column1"}),
+				    #"Expanded Column1" = Table.ExpandRecordColumn(#"Expanded FnGetCards1", "Column1", {"id", "idMembers"}, {"id", "idMembers"}),
+				    #"Expanded idMembers" = Table.ExpandListColumn(#"Expanded Column1", "idMembers"),
+				    #"Filtered Rows" = Table.SelectRows(#"Expanded idMembers", each [idMembers] <> null and [idMembers] <> ""),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Filtered Rows",{{"id", "Card ID"}, {"idMembers", "Member ID"}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns1",{"Board ID"})
+				in
+				    #"Removed Columns"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
